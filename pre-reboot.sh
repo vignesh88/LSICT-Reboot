@@ -1,5 +1,5 @@
 #!/bin/bash
-#author vignesh_ragupaty@yahoo.com
+#author vignesh_ragupathy@yahoo.com
 ## Version 2.1
 
 PATH=$PATH:/usr/sbin::/usr/bin:/sbin:/bin:
