@@ -1,5 +1,9 @@
 #!/bin/bash
 #author vignesh_ragupathy@yahoo.com
+## Version 2.1
+
+PATH=$PATH:/usr/sbin::/usr/bin:/sbin:/bin:
+
 
 
 service --status-all |grep running... |awk '{print $1}' > /usr/local/stats/script_RB_check/a_services
@@ -59,23 +63,23 @@ grep $Memory /usr/local/stats/script_RB_check/b_memory > /dev/null
 
 
 
-sysctl -a |grep -v kernel.random.uuid |grep -v random.entropy_avail  |grep -v fs.inode |grep -v fs.dentry-state |perl -lape 's/\s+//sg'  > /usr/local/stats/script_RB_check/a_sysctlvalues
-echo " "> /usr/local/stats/script_RB_check/sysctl_status.txt
-while read line
-do
-grep $line /usr/local/stats/script_RB_check/b_sysctlvalues > /dev/null
-if [ $? == 0 ]; then
-echo 1 >> /usr/local/stats/script_RB_check/sysctl_status.txt
-else
-echo Kernel parameter mismatch for $line
-echo 0 >> /usr/local/stats/script_RB_check/sysctl_status.txt
-fi
-done <  /usr/local/stats/script_RB_check/a_sysctlvalues
+#sysctl -a |grep -v kernel.random.uuid |grep -v random.entropy_avail  |grep -v fs.inode |grep -v fs.dentry-state |perl -lape 's/\s+//sg'  > /usr/local/stats/script_RB_check/a_sysctlvalues
+#echo " "> /usr/local/stats/script_RB_check/sysctl_status.txt
+#while read line
+#do
+#grep $line /usr/local/stats/script_RB_check/b_sysctlvalues > /dev/null
+#if [ $? == 0 ]; then
+#echo 1 >> /usr/local/stats/script_RB_check/sysctl_status.txt
+#else
+#echo Kernel parameter mismatch for $line
+#echo 0 >> /usr/local/stats/script_RB_check/sysctl_status.txt
+#fi
+#done <  /usr/local/stats/script_RB_check/a_sysctlvalues
 
-grep 0 /usr/local/stats/script_RB_check/sysctl_status.txt > /dev/nul
-        if [ $? != 0 ]; then
-        echo Sysctl values are same
-        fi
+#grep 0 /usr/local/stats/script_RB_check/sysctl_status.txt > /dev/nul
+#        if [ $? != 0 ]; then
+#        echo Sysctl values are same
+#        fi
 
 
 
@@ -85,32 +89,30 @@ if [ $? == 0 ]; then
         multipath -ll |grep failed -B 3 |grep HP |awk '{print $2}' |sed s/"("//g |sed s/")"//g > /usr/local/stats/script_RB_check/a_failed_luns
         multipath -ll |grep HP |awk '{print $2}' |sed s/"("//g |sed s/")"//g > /usr/local/stats/script_RB_check/a_all_luns
         rm -f /usr/local/stats/script_RB_check/a_active_luns
-                for lun in `cat /usr/local/stats/script_RB_check/a_all_luns`
+                for lun in `cat /usr/local/stats/script_RB_check/b_all_luns`
                 do
                 grep $lun /usr/local/stats/script_RB_check/a_failed_luns > /dev/null
                         if [ $? == 0 ]; then
                         echo " " > /dev/null
-                        #echo $lun 
                         else
                         echo $lun >> /usr/local/stats/script_RB_check/a_active_luns
                         fi
                 done
 
 
-rm -f /usr/local/stats/script_RB_check/active_lun_status.txt
         for Lun  in `cat /usr/local/stats/script_RB_check/b_active_luns`
         do
         grep $Lun /usr/local/stats/script_RB_check/a_active_luns > /dev/null
                 if [ $? == 0 ]; then
-                echo 1 >> /usr/local/stats/script_RB_check/active_lun_status.txt
+                echo 1 > /usr/local/stats/script_RB_check/active_lun_status.txt
                 else
-                echo Lun $Lun is missing or failed
+                echo Lun $Lun is missing
                 echo 0 > /usr/local/stats/script_RB_check/active_lun_status.txt
                 fi
         done
 
-        grep 0 /usr/local/stats/script_RB_check/active_lun_status.txt > /dev/null
-                if [ $? != 0 ]; then
+        grep 1 /usr/local/stats/script_RB_check/active_lun_status.txt > /dev/null
+                if [ $? == 0 ]; then
                 echo All LUNS are active as before reboot
                 fi
 
@@ -128,4 +130,6 @@ rm -f /usr/local/stats/script_RB_check/active_lun_status.txt
 else
 echo " " > /dev/null
 fi
+
+
 
